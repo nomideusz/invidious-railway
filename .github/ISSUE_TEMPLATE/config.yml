@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Invidious application bug
+    url: https://github.com/iv-org/invidious/issues
+    about: UI, search, accounts, settings, configuration options — anything inside the Invidious app itself
+  - name: Companion / video playback bug
+    url: https://github.com/iv-org/invidious-companion/issues
+    about: PO-token failures, YouTube extraction errors, stream URL issues
+  - name: Railway platform issue
+    url: https://railway.com/help
+    about: Build failures, networking, billing, platform reliability
+  - name: How do I export YouTube cookies?
+    url: https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies
+    about: Step-by-step guide from yt-dlp on safe cookie export. Required reading before filing a "videos won't play" issue here.
