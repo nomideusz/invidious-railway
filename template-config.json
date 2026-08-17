@@ -1,0 +1,140 @@
+{
+  "buckets": {},
+  "services": {
+    "26d2847b-19b4-43ed-b5f8-3e5335cb6f93": {
+      "icon": "https://files.zaur.app//gXy9gOzh8XvA.png",
+      "name": "Companion",
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": null,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "quay.io/invidious/invidious-companion:2026.08.10-16cf10e"
+      },
+      "variables": {
+        "PORT": {
+          "isOptional": false,
+          "description": "Port Companion listens on (referenced from Invidious config)",
+          "defaultValue": "8282"
+        },
+        "SERVER_SECRET_KEY": {
+          "isOptional": false,
+          "description": "Shared secret with Invidious. Must reference Invidious's variable, NOT be independently generated.",
+          "defaultValue": "${{Invidious.INVIDIOUS_COMPANION_KEY}}"
+        }
+      }
+    },
+    "355c0322-1563-498a-a0e1-555b18a5b06d": {
+      "icon": "https://64.media.tumblr.com/avatar_7ddd9ad7e253_96.pnj",
+      "name": "Postgres",
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": null,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "postgres:16-alpine"
+      },
+      "variables": {
+        "PGDATA": {
+          "isOptional": false,
+          "description": "Subdirectory inside the volume mount. Postgres won't initialize in a directory that already contains lost+found, so we use a child path.",
+          "defaultValue": "/var/lib/postgresql/data/pgdata"
+        },
+        "PGHOST": {
+          "isOptional": false,
+          "description": "Internal hostname inside Railway's private IPv6 network. Auto-resolved at deploy time.",
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}"
+        },
+        "PGPORT": {
+          "isOptional": false,
+          "description": "Postgres listening port. Static.",
+          "defaultValue": "5432"
+        },
+        "PGUSER": {
+          "isOptional": false,
+          "description": "Reference to POSTGRES_USER, for libpq-based clients (psql, pg_dump) that read PGUSER instead of POSTGRES_USER.",
+          "defaultValue": "${{POSTGRES_USER}}"
+        },
+        "PGDATABASE": {
+          "isOptional": false,
+          "description": "Reference to POSTGRES_DB, for libpq clients.",
+          "defaultValue": "${{POSTGRES_DB}}"
+        },
+        "PGPASSWORD": {
+          "isOptional": false,
+          "description": "Reference to POSTGRES_PASSWORD, for libpq clients.",
+          "defaultValue": "${{POSTGRES_PASSWORD}}"
+        },
+        "POSTGRES_DB": {
+          "isOptional": false,
+          "description": "Default database created on first boot. Static.",
+          "defaultValue": "railway"
+        },
+        "DATABASE_URL": {
+          "isOptional": false,
+          "description": "Full Postgres connection string for clients that expect a single URL. Composed from references \u2014 auto-updates if the password is regenerated.",
+          "defaultValue": "postgresql://${{POSTGRES_USER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{POSTGRES_DB}}"
+        },
+        "POSTGRES_USER": {
+          "isOptional": false,
+          "description": "Postgres superuser name. Static; matches the upstream Postgres image's default convention.",
+          "defaultValue": "postgres"
+        },
+        "POSTGRES_PASSWORD": {
+          "isOptional": false,
+          "description": "Auto-generated Postgres password. Sealed at deploy time. Referenced by PGPASSWORD and DATABASE_URL \u2014 do not change after first deploy or existing connections will break.",
+          "defaultValue": "${{secret(32)}}"
+        }
+      },
+      "volumeMounts": {
+        "355c0322-1563-498a-a0e1-555b18a5b06d": {
+          "mountPath": "/var/lib/postgresql/data"
+        }
+      }
+    },
+    "649e1c4f-71eb-42fa-94a0-04bc19aee963": {
+      "icon": "https://files.zaur.app//gXy9gOzh8XvA.png",
+      "name": "Invidious",
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": "/feed/popular",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "quay.io/invidious/invidious:2026.08.15-d10f2a4"
+      },
+      "variables": {
+        "PORT": {
+          "isOptional": false,
+          "description": "Port Invidious listens on (also referenced from INVIDIOUS_CONFIG).",
+          "defaultValue": "3000"
+        },
+        "HMAC_KEY": {
+          "isOptional": false,
+          "description": "Auto-generated HMAC secret used to sign user session cookies. Do NOT change after first deploy \u2014 all signed-in sessions will be invalidated.",
+          "defaultValue": "${{secret(64)}}"
+        },
+        "INVIDIOUS_CONFIG": {
+          "isOptional": false,
+          "description": "Full Invidious config in YAML. Database credentials, companion wiring, and domain are all references \u2014 leave them alone.",
+          "defaultValue": "db:\n  user: ${{Postgres.POSTGRES_USER}}\n  password: ${{Postgres.POSTGRES_PASSWORD}}\n  host: ${{Postgres.RAILWAY_PRIVATE_DOMAIN}}\n  port: 5432\n  dbname: ${{Postgres.POSTGRES_DB}}\ncheck_tables: true\ndomain: ${{RAILWAY_PUBLIC_DOMAIN}}\nhttps_only: true\nexternal_port: 443\nhmac_key: ${{HMAC_KEY}}\nport: 3000\nhost_binding: \"0.0.0.0\"\ninvidious_companion:\n  - private_url: \"http://${{Companion.RAILWAY_PRIVATE_DOMAIN}}:8282/companion\"\n    public_url: \"https://${{RAILWAY_PUBLIC_DOMAIN}}/companion\"\ninvidious_companion_key: ${{INVIDIOUS_COMPANION_KEY}}"
+        },
+        "INVIDIOUS_COMPANION_KEY": {
+          "isOptional": false,
+          "description": "Auto-generated shared secret authenticating the Invidious\u2194Companion link. Companion.SERVER_SECRET_KEY references this value.",
+          "defaultValue": "${{secret(16)}}"
+        }
+      },
+      "networking": {
+        "serviceDomains": {
+          "<hasDomain>": {}
+        }
+      }
+    }
+  }
+}
