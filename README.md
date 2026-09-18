@@ -38,6 +38,10 @@ Edit `INVIDIOUS_CONFIG` on the Invidious service. It's a YAML document — see t
 
 To pin image versions instead of `:latest`, change the source image tag on each service (e.g. `quay.io/invidious/invidious:2026.04.01`) and redeploy.
 
+## Troubleshooting
+
+**API and watch pages return 500 with "Youtube API returned status code 400"** — YouTube changed its API and your deployed image is stale. Redeploy both the Invidious and Companion services so Railway pulls the latest `:latest` images; the upstream projects track YouTube changes and a fresh image is usually the whole fix. (Video *playback* often keeps working while metadata breaks — that's the tell.)
+
 ## Where to file issues
 
 | Issue | Where |

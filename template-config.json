@@ -100,7 +100,7 @@
       "icon": "https://files.zaur.app//gXy9gOzh8XvA.png",
       "name": "Invidious",
       "deploy": {
-        "startCommand": null,
+        "startCommand": "/bin/sh -c \"until nc -z $PGHOST 5432; do echo waiting for postgres; sleep 2; done; exec /invidious/invidious\"",
         "healthcheckPath": "/feed/popular",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
@@ -128,6 +128,11 @@
           "isOptional": false,
           "description": "Auto-generated shared secret authenticating the Invidious\u2194Companion link. Companion.SERVER_SECRET_KEY references this value.",
           "defaultValue": "${{secret(16)}}"
+        },
+        "PGHOST": {
+          "isOptional": false,
+          "description": "Postgres host the start command waits for before launching. Don't change.",
+          "defaultValue": "${{Postgres.RAILWAY_PRIVATE_DOMAIN}}"
         }
       },
       "networking": {
