@@ -2,9 +2,9 @@
 
 One-click deploy of [Invidious](https://github.com/iv-org/invidious) — a privacy-respecting, open-source front-end for YouTube — on [Railway](https://railway.com). Watch and search YouTube without ads, tracking, JavaScript, or a Google account.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/invidious?utm_medium=integration&utm_source=button&utm_campaign=invidious)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/invidious?referralCode=sLjDXb&utm_medium=integration&utm_source=button&utm_campaign=invidious)
 
-Live template: <https://railway.com/deploy/invidious>
+Live template: <https://railway.com/deploy/invidious?referralCode=sLjDXb>
 
 ## What gets deployed
 
