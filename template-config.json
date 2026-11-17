@@ -100,13 +100,13 @@
       "icon": "https://files.zaur.app//gXy9gOzh8XvA.png",
       "name": "Invidious",
       "deploy": {
-        "startCommand": "/bin/sh -c \"until nc -z $PGHOST 5432; do echo waiting for postgres; sleep 2; done; exec /invidious/invidious\"",
-        "healthcheckPath": "/feed/popular",
+        "startCommand": null,
+        "healthcheckPath": "/api/v1/stats",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
       },
       "source": {
-        "image": "quay.io/invidious/invidious:2026.10.13-57cc097"
+        "image": "ghcr.io/two-workspaces/invidious:4655b20"
       },
       "variables": {
         "PORT": {

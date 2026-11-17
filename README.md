@@ -10,7 +10,7 @@ Live template: <https://railway.com/deploy/invidious?referralCode=sLjDXb>
 
 | Service | Image | Role |
 |---|---|---|
-| **Invidious** | `quay.io/invidious/invidious:2026.10.13-57cc097` | Web front-end on a public HTTPS domain (port 3000) |
+| **Invidious** | `ghcr.io/two-workspaces/invidious` (upstream `2026.10.26-1c4b41f` plus a restart wrapper) | Web front-end on a public HTTPS domain (port 3000) |
 | **Companion** | `quay.io/invidious/invidious-companion:2026.09.19-bb3b37f` | Internal-only stream extractor (port 8282) |
 | **Postgres** | `postgres:16-alpine` | Stores accounts, subscriptions, watch history, playlists. 5 GB volume. |
 
@@ -36,7 +36,9 @@ Full background: [Invidious YouTube errors explained](https://docs.invidious.io/
 
 Edit `INVIDIOUS_CONFIG` on the Invidious service. It's a YAML document — see the [Invidious config reference](https://docs.invidious.io/configuration/). Don't edit the `db:`, `hmac_key:`, or `invidious_companion:` blocks — they're populated by `${{...}}` references that resolve at deploy.
 
-Images are pinned to tested upstream builds. To move to a newer one, change the source image tag on the service (tags are listed at [quay.io/invidious/invidious](https://quay.io/repository/invidious/invidious?tab=tags) and [quay.io/invidious/invidious-companion](https://quay.io/repository/invidious/invidious-companion?tab=tags)) and redeploy.
+**Invidious restarts itself every hour.** Upstream says Invidious [must be restarted often](https://docs.invidious.io/installation/), ideally every hour. A small wrapper ([source](https://github.com/two-workspaces/invidious/blob/main/railway-invidious.sh)) does that, and restarts it sooner if it reaches 90% of its memory limit, so the container never goes down. A restart takes a few seconds. Change the interval with `RESTART_EVERY` (seconds) and the threshold with `MEMORY_PCT` on the Invidious service.
+
+Images are pinned to tested upstream builds. Companion uses the upstream image directly: to move it, change its source image tag (tags are at [quay.io/invidious/invidious-companion](https://quay.io/repository/invidious/invidious-companion?tab=tags)) and redeploy. Invidious is built from the `FROM` tag in this repo's `Dockerfile` (tags at [quay.io/invidious/invidious](https://quay.io/repository/invidious/invidious?tab=tags)). Bump it in your fork, or set the service's source image to an upstream tag if you don't need the hourly restart.
 
 ## Troubleshooting
 
