@@ -1,0 +1,34 @@
+# Builds the image the Railway template deploys: upstream Invidious plus the restart wrapper.
+# Each push to main gets ghcr.io/<this repo>:<short sha>; point template-config.json at it,
+# then republish.
+name: Image
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["README.md", "template-*.json", "LICENSE", ".github/ISSUE_TEMPLATE/**"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  image:
+    if: github.repository_owner == 'two-workspaces'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository }}:${{ env.SHORT_SHA }},ghcr.io/${{ github.repository }}:latest
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
